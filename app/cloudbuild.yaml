@@ -1,0 +1,39 @@
+steps:
+  # Build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "gcr.io/$PROJECT_ID/productivity-assistant", "."]
+
+  # Push to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/productivity-assistant"]
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "productivity-assistant"
+      - "--image"
+      - "gcr.io/$PROJECT_ID/productivity-assistant"
+      - "--region"
+      - "$_REGION"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+      - "--add-cloudsql-instances=$_ALLOYDB_INSTANCE"
+      - "--set-env-vars"
+      - "GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_REGION=$_REGION"
+      - "--memory"
+      - "1Gi"
+      - "--cpu"
+      - "2"
+      - "--timeout"
+      - "300"
+
+substitutions:
+  _REGION: us-central1
+  _ALLOYDB_INSTANCE: ""
+
+images:
+  - "gcr.io/$PROJECT_ID/productivity-assistant"

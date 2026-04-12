@@ -12,3 +12,5 @@ token.json
 app/token.json
 app/.env
 app/.env
+app/app/token.json
+tokens.json

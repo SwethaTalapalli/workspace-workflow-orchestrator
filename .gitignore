@@ -11,3 +11,4 @@ credentials.json
 token.json
 app/token.json
 app/.env
+app/.env

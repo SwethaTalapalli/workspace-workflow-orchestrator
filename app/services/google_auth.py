@@ -31,6 +31,22 @@ _credentials: Credentials | None = None
 _service_cache: Dict[str, object] = {}
 
 
+def _resolve_credentials_file() -> str:
+    """Use Cloud Run secret file when available, otherwise local settings path."""
+    cloud_path = "/secrets/credentials.json"
+    if os.path.exists(cloud_path):
+        return cloud_path
+    return settings.google_oauth_credentials_file
+
+
+def _resolve_token_file() -> str:
+    """Use Cloud Run secret file when available, otherwise local settings path."""
+    cloud_path = "/secrets/token.json"
+    if os.path.exists(cloud_path):
+        return cloud_path
+    return settings.google_oauth_token_file
+
+
 def _ensure_parent_dir(file_path: str) -> None:
     Path(file_path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
 
@@ -48,6 +64,12 @@ def _load_saved_credentials(token_file: str) -> Credentials | None:
 
 
 def _save_credentials(creds: Credentials, token_file: str) -> None:
+    # In Cloud Run, secret-mounted files are read-only.
+    # Do not attempt to overwrite /secrets/token.json.
+    if str(token_file).startswith("/secrets/"):
+        logger.info("Skipping token save because Cloud Run secret files are read-only: %s", token_file)
+        return
+
     _ensure_parent_dir(token_file)
     token_path = Path(token_file).expanduser().resolve()
     with token_path.open("w", encoding="utf-8") as handle:
@@ -86,7 +108,7 @@ def _build_flow() -> InstalledAppFlow:
         logger.info("Starting OAuth flow using GOOGLE_OAUTH_CREDENTIALS_JSON")
         return InstalledAppFlow.from_client_config(oauth_config, SCOPES)
 
-    credentials_file = Path(settings.google_oauth_credentials_file).expanduser().resolve()
+    credentials_file = Path(_resolve_credentials_file()).expanduser().resolve()
     if not credentials_file.exists():
         raise FileNotFoundError(
             "OAuth credentials not found.\n"
@@ -98,12 +120,8 @@ def _build_flow() -> InstalledAppFlow:
     return InstalledAppFlow.from_client_secrets_file(str(credentials_file), SCOPES)
 
 
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.oauth2.credentials import Credentials
-
 def _run_manual_oauth_flow() -> Credentials:
     flow = _build_flow()
-
     flow.redirect_uri = "http://localhost"
 
     auth_url, _ = flow.authorization_url(
@@ -115,7 +133,6 @@ def _run_manual_oauth_flow() -> Credentials:
     print(auth_url)
 
     code = input("\nEnter the authorization code: ").strip()
-
     flow.fetch_token(code=code)
 
     return flow.credentials
@@ -123,6 +140,8 @@ def _run_manual_oauth_flow() -> Credentials:
 
 def get_credentials(force_refresh: bool = False) -> Credentials:
     global _credentials
+
+    token_file = _resolve_token_file()
 
     if force_refresh:
         logger.info("Force refresh requested; clearing cached credentials and services")
@@ -133,7 +152,7 @@ def get_credentials(force_refresh: bool = False) -> Credentials:
         return _credentials
 
     if _credentials is None:
-        _credentials = _load_saved_credentials(settings.google_oauth_token_file)
+        _credentials = _load_saved_credentials(token_file)
 
     if not _credentials or not _credentials.valid:
         if _credentials and _credentials.expired and _credentials.refresh_token:
@@ -146,7 +165,7 @@ def get_credentials(force_refresh: bool = False) -> Credentials:
         else:
             _credentials = _run_manual_oauth_flow()
 
-        _save_credentials(_credentials, settings.google_oauth_token_file)
+        _save_credentials(_credentials, token_file)
 
     return _credentials
 

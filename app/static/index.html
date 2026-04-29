@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Workflow Orchestrator</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <div class="brand-copy">
+                    <h2>Workspace Workflow Orchestrator</h2>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Available Sub-Agents</h3>
+                <ul class="agent-list">
+                    <li><span class="dot active"></span> Calendar Agent</li>
+                    <li><span class="dot active"></span> Docs Agent</li>
+                    <li><span class="dot active"></span> Gmail Agent</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Try these</h3>
+
+                <div class="suggestions-container">
+                    <button class="suggestion-card" type="button"
+                        onclick="setInput('Give me my morning briefing for today, including meetings, important emails, and action items.')">
+                        <div class="suggestion-icon">☀️</div>
+                        <div class="suggestion-content">
+                            <div class="suggestion-title">Morning Briefing</div>
+                            <div class="suggestion-desc">See today’s meetings, emails and priorities</div>
+                        </div>
+                    </button>
+
+                    <button class="suggestion-card" type="button"
+                        onclick="setInput('Schedule a project kickoff meeting tomorrow at 3 PM with test@example.com for 1 hour, create a structured agenda document with key discussion points and action items, and share both the agenda document link and calendar event link.')">
+                        <div class="suggestion-icon">📅</div>
+                        <div class="suggestion-content">
+                            <div class="suggestion-title">Schedule Meeting</div>
+                            <div class="suggestion-desc">Create a meeting and agenda document</div>
+                        </div>
+                    </button>
+
+                    <button class="suggestion-card" type="button"
+                        onclick="setInput('Summarize my unread important emails and tell me which ones need action today.')">
+                        <div class="suggestion-icon">✉️</div>
+                        <div class="suggestion-content">
+                            <div class="suggestion-title">Triage Inbox</div>
+                            <div class="suggestion-desc">Summarize emails and highlight actions</div>
+                        </div>
+                    </button>
+
+                    <button class="suggestion-card" type="button"
+                        onclick="setInput('Find my next calendar meeting and suggest rescheduling it to tomorrow at 3 PM. Do not update until I confirm.')">
+                        <div class="suggestion-icon">🔁</div>
+                        <div class="suggestion-content">
+                            <div class="suggestion-title">Reschedule Meeting</div>
+                            <div class="suggestion-desc">Suggest a safe reschedule option</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="chat-container">
+            <header class="chat-header">
+                <div class="status-indicator">
+                    <span class="pulse"></span>
+                    <span>System Ready</span>
+                    <span class="separator">•</span>
+                    <span class="model-pill" id="headerModelName">Gemini 2.5 Flash</span>
+                </div>
+
+                <button class="new-chat-btn" type="button" onclick="startNewChat()">+ New Session</button>
+            </header>
+
+            <div class="chat-history" id="chatHistory">
+                <div class="message system-msg">
+                    <div class="avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                    </div>
+                    <div class="msg-content">
+                        <strong>Hello! I am your Workspace Workflow Orchestrator.</strong>
+                        <p>I can help you manage Google Calendar, Gmail, and Docs workflows. Try asking me for your
+                            morning briefing, to schedule a meeting, or to summarize your inbox.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="typing-indicator hidden" id="typingIndicator">
+                Agent is thinking and coordinating workflows...
+            </div>
+
+            <div class="input-area">
+                <form id="chatForm">
+                    <div class="input-wrapper">
+                        <textarea id="userInput" placeholder="Ask the Orchestrator..." rows="1" autofocus></textarea>
+                        <button type="submit" id="sendBtn" aria-label="Send message">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" aria-hidden="true">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="footer-text">
+                    Powered by Google ADK,
+                    <span id="footerModelName">Gemini 2.5 Flash</span>,
+                    FastMCP, and AlloyDB on Google Cloud Run.
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.APP_CONFIG = {
+            modelName: "Gemini 2.5 Flash"
+        };
+    </script>
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

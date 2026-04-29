@@ -14,3 +14,17 @@ app/.env
 app/.env
 app/app/token.json
 tokens.json
+
+# secrets
+.env
+*.env
+token.json
+credentials.json
+app/token.json
+app/credentials.json
+
+# python
+__pycache__/
+*.pyc
+.venv/
+productivity.db
